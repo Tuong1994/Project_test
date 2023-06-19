@@ -1,10 +1,35 @@
 * {
-    font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.fc-header {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fc-view-select {
+  width: 100px;
+  margin-right: 20px;
+  padding: 6px 12px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  outline: none;
 }
 
 .react-datepicker {
-    display: flex;
+  display: flex;
+}
+.react-datepicker__input-container input {
+  padding: 6px 12px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  outline: none;
+}
+.react-datepicker__input-container input:focus {
+  border-color: #aaa;
 }
 .react-datepicker-popper {
-    z-index: 100;
+  z-index: 100;
 }
