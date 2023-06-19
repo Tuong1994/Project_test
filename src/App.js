@@ -19,6 +19,8 @@ function App() {
 
   const [startDate, setStartDate] = useState(new Date());
 
+  const [eventUpdate, setEventUpdate] = useState("");
+
   const calendarRef = useRef(null);
 
   let eventGuid = 0
@@ -38,7 +40,7 @@ function App() {
     return String(eventGuid++)
   }
 
-  const handleViewSelect = (e) => {    
+  const handleViewSelect = (e) => {
     setSelectView(e.target.value)
   }
 
@@ -63,13 +65,9 @@ function App() {
     setCurrentEvents(e)
   }
 
-  const handleDateClick = (e) => {
-    console.log(e.event)
-  }
-
   const renderEventContent = (eventInfo) => {
-    return <div>
-      <i>{eventInfo.event.title}</i>
+    return <div style={{ overflow: "hidden" }}>
+      <small>{eventInfo.event.title}</small>
     </div>
   }
 
@@ -84,10 +82,9 @@ function App() {
 
         <DatePicker
           monthsShown={2}
-          showYearDropdown
-          inline={false}
         />
       </div>
+
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, resourceTimeGridPlugin]}
@@ -107,11 +104,12 @@ function App() {
         select={handleDateSelect}
         eventsSet={handleEvents} // called after events are initialized/added/changed/removed
         eventContent={renderEventContent} // custom render function
-        eventChange={handleDateClick}
+        eventChange={(e) => console.log(e)}
       /* you can update a remote database when these fire:
-      eventAdd={function(){}}
-      eventRemove={function(){}}
-      */
+      eventChange={() => {}}
+    eventAdd={function(){}}
+    eventRemove={function(){}}
+    */
       />
     </Fragment>
   );
