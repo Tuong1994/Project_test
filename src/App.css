@@ -26,6 +26,7 @@
   border: 1px solid #bbb;
   border-radius: 4px;
   outline: none;
+  text-align: center;
 }
 .react-datepicker__input-container input:focus {
   border-color: #aaa;
