@@ -1,17 +1,21 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useRef, useState, useEffect } from "react";
 import { data } from "./data";
 import { Views } from "./common/constant";
 import FullCalendar from "@fullcalendar/react";
 import DatePicker from "./Component/DatePicker";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
 import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 import "./App.css";
 
 function App() {
+  const [list, setList] = useState([
+    { title: "Event 1", id: "" }
+  ])
+
   const [eventsData, setEventsData] = useState(() => {
     return data.map((data) => ({
       id: data.event.id,
@@ -30,10 +34,20 @@ function App() {
 
   const calendarRef = useRef(null);
 
-  const createEventId = () => {
-    let eventGuid = 0;
-    return String(eventGuid++);
-  };
+  useEffect(() => {
+    let draggableEl = document.getElementById("external-events");
+    new Draggable(draggableEl, {
+      itemSelector: ".events-item",
+      eventData: function (eventEl) {
+        const id = eventEl.getAttribute("id");
+        const title = eventEl.getAttribute("title")
+        return {
+          id,
+          title
+        }
+      }
+    });
+  })
 
   // Handle change view
   const handleViewSelect = (e) => {
@@ -62,21 +76,7 @@ function App() {
     }
   };
 
-  const handleDateSelect = (selectInfo) => {
-    let title = prompt("Please enter a new title for your event");
-    let calendarApi = selectInfo.view.calendar;
 
-    calendarApi.unselect(); // clear date selection
-
-    if (title) {
-      calendarApi.addEvent({
-        id: createEventId(),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-      });
-    }
-  };
 
   // Update Event
   const handleEventUpdate = (e) => {
@@ -84,21 +84,25 @@ function App() {
 
     const idx = events.findIndex((event) => event.id === e.event.id);
 
-    const firstTitle = events[idx].title.split("<>")[0];
+    const firstPartTitle = events[idx].title.split("<>")[0];
 
-    console.log(firstTitle)
+    const subFirstPartTitle = firstPartTitle.split(" ");
 
-    const splitTitle = events[idx].title.split("<>")[1];
+    const subArr = [subFirstPartTitle[1], subFirstPartTitle[2], subFirstPartTitle[3]];
 
-    const date = splitTitle.split("-")
+    const lastPartTitle = events[idx].title.split("<>")[1];
 
-    const lastTitle = [...date.slice(0, 1), "-", moment(e.event.start).format("MM/DD/YYYY")].join(" ")
+    const subLastPartTitle = lastPartTitle.split("-");
+
+    const firstTitle = "";
+
+    const lastTitle = [...subLastPartTitle.slice(0, 1), "-", moment(e.event.start).format("MM/DD/YYYY")].join(" ")
 
     const event = {
       ...events[idx],
-      title: `${firstTitle}<>${lastTitle}`,
-      start: moment(e.event.start).format(),
-      end: moment(e.event.end).format(),
+      title: `${firstPartTitle}<>${lastTitle}`,
+      start: moment(e.event.start).format("YYYY-MM-DD HH:mm"),
+      end: moment(e.event.end).format("YYYY-MM-DD HH:mm"),
       backgroundColor: "red",
     }
 
@@ -143,29 +147,42 @@ function App() {
         <DatePicker viewType={selectView} onChange={handleDatePick} />
       </div>
 
-      <FullCalendar
-        plugins={[
-          dayGridPlugin,
-          timeGridPlugin,
-          interactionPlugin,
-          resourceTimeGridPlugin,
-        ]}
-        ref={calendarRef}
-        headerToolbar={false}
-        editable={true}
-        selectable={true}
-        selectMirror={true}
-        dayMaxEvents={true}
-        weekends={true}
-        initialView={selectView}
-        initialEvents={eventsData}
-        views={selectView}
-        events={eventsData}
-        select={handleDateSelect}
-        eventContent={renderEventContent}
-        eventResize={handleEventUpdate}
-        eventChange={handleEventUpdate}
-     />
+      <div className="fc-container">
+        <div className="container-events" id="external-events">
+          <h3 style={{ textAlign: "center" }}>Events</h3>
+
+          {list.map((item) => (
+            <div key={item.id} title={item.title} id={item.id} className="events-item">
+              {item.title}
+            </div>
+          ))}
+        </div>
+
+        <div className="container-calendar">
+          <FullCalendar
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              resourceTimeGridPlugin,
+            ]}
+            ref={calendarRef}
+            headerToolbar={false}
+            editable={true}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            weekends={true}
+            initialView={selectView}
+            initialEvents={eventsData}
+            views={selectView}
+            events={eventsData}
+            eventContent={renderEventContent}
+            eventResize={handleEventUpdate}
+            eventChange={handleEventUpdate}
+          />
+        </div>
+      </div>
     </Fragment>
   );
 }

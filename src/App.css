@@ -18,6 +18,28 @@
   outline: none;
 }
 
+.fc-container {
+  width: 100%;
+  display: flex;
+}
+
+.container-events {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.events-item {
+  padding: 10px;
+  background: #ddd;
+  border-radius: 4px;
+}
+
+.container-calendar {
+  width: calc(100% - 300px);
+}
+
 .react-datepicker {
   display: flex;
 }
