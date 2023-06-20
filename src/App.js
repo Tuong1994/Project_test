@@ -174,7 +174,6 @@ function App() {
             dayMaxEvents={true}
             weekends={true}
             initialView={selectView}
-            initialEvents={eventsData}
             views={selectView}
             events={eventsData}
             eventContent={renderEventContent}
