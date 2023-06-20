@@ -12,47 +12,91 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./App.css";
 
 function App() {
-  const [list, setList] = useState([
-    { title: "Event 1", id: "" }
-  ])
+  const [externalEvents, setExternalEvents] = useState([
+    { title: "Event 1", id: "1" },
+  ]);
 
-  const [eventsData, setEventsData] = useState(() => {
-    return data.map((data) => ({
-      id: data.event.id,
-      title: `${data.tile.header}<>${[
-        data.tile.content[0],
-        "-",
-        data.tile.content[1],
-      ].join(" ")}`,
-      start: data.event.start,
-      end: data.event.end,
-      backgroundColor: "",
-    }));
-  });
+  const [eventsData, setEventsData] = useState([]);
 
   const [selectView, setSelectView] = useState(Views.TIME_GRID_WEEK);
 
   const calendarRef = useRef(null);
 
+  // Convert data and set events data
+  useEffect(() => {
+    const events = data.map((data) => {
+      const splitTitle = data.tile.header.split(" ")[0];
+
+      const firstPartTitle = [
+        splitTitle,
+        ",",
+        moment(data.event.start).format("HH:mm "),
+        "-",
+        moment(data.event.end).format("HH:mma"),
+      ].join(" ");
+
+      const lastPartTitle = [
+        data.tile.content[0],
+        "-",
+        data.tile.content[1],
+      ].join(" ");
+
+      const title = `${firstPartTitle}<>${lastPartTitle}`;
+
+      return {
+        id: data.event.id,
+        title: title,
+        start: moment(data.event.start).format("YYYY-MM-DD HH:mm"),
+        end: moment(data.event.end).format("YYYY-MM-DD HH:mm"),
+        backgroundColor: "",
+      };
+    });
+
+    setEventsData(events);
+  }, []);
+
+  // handle drag external event item
   useEffect(() => {
     let draggableEl = document.getElementById("external-events");
-    new Draggable(draggableEl, {
+    const draggable = new Draggable(draggableEl, {
       itemSelector: ".events-item",
       eventData: function (eventEl) {
         const id = eventEl.getAttribute("id");
-        const title = eventEl.getAttribute("title")
-        return {
+
+        const title = eventEl.getAttribute("title");
+
+        const event = {
           id,
-          title
-        }
-      }
+          title,
+        };
+
+        eventsData.push(event);
+
+        setEventsData(eventsData);
+
+        return event;
+      },
     });
-  })
+    return () => draggable.destroy();
+  });
 
   // Handle change view
   const handleViewSelect = (e) => {
-    setSelectView(e.target.value);
-    calendarRef.current.getApi().changeView(e.target.value);
+    const views = {
+      timeGridTwoWeek: {
+        type: Views.TIME_GRID_WEEK,
+        duration: { days: 14 },
+      },
+    };
+
+    if (
+      e.target.value === Views.TIME_GRID_DAY ||
+      e.target.value === Views.TIME_GRID_WEEK ||
+      e.target.value === Views.DAY_GRID_MONTH
+    ) {
+      setSelectView(e.target.value);
+      calendarRef.current.getApi().changeView(e.target.value);
+    }
   };
 
   // Handle date pick
@@ -65,7 +109,7 @@ function App() {
       case Views.TIME_GRID_WEEK: {
         if (typeof date === "object") {
           const [start] = date;
-          calendarRef.current.getApi().gotoDate(start)
+          calendarRef.current.getApi().gotoDate(start);
         }
         break;
       }
@@ -75,8 +119,6 @@ function App() {
       }
     }
   };
-
-
 
   // Update Event
   const handleEventUpdate = (e) => {
@@ -88,23 +130,31 @@ function App() {
 
     const subFirstPartTitle = firstPartTitle.split(" ");
 
-    const subArr = [subFirstPartTitle[1], subFirstPartTitle[2], subFirstPartTitle[3]];
-
     const lastPartTitle = events[idx].title.split("<>")[1];
 
-    const subLastPartTitle = lastPartTitle.split("-");
+    const subLastPartTitle = lastPartTitle ? lastPartTitle.split("-") : "";
 
-    const firstTitle = "";
+    const firstTitle = [
+      ...subFirstPartTitle.slice(0, 1),
+      ",",
+      moment(e.event.start).format("HH:mm "),
+      "-",
+      moment(e.event.end).format("HH:mma"),
+    ].join(" ");
 
-    const lastTitle = [...subLastPartTitle.slice(0, 1), "-", moment(e.event.start).format("MM/DD/YYYY")].join(" ")
+    const lastTitle = [
+      ...subLastPartTitle.slice(0, 1),
+      "-",
+      moment(e.event.start).format("MM/DD/YYYY"),
+    ].join(" ");
 
     const event = {
       ...events[idx],
-      title: `${firstPartTitle}<>${lastTitle}`,
+      title: `${firstTitle}<>${lastTitle}`,
       start: moment(e.event.start).format("YYYY-MM-DD HH:mm"),
       end: moment(e.event.end).format("YYYY-MM-DD HH:mm"),
       backgroundColor: "red",
-    }
+    };
 
     events[idx] = event;
 
@@ -118,10 +168,10 @@ function App() {
       <div
         style={{
           width: "100%",
-          padding: "10px",
+          padding: "5px",
           overflow: "hidden",
           borderRadius: "4px",
-          backgroundColor: eventInfo.event.backgroundColor
+          backgroundColor: eventInfo.event.backgroundColor,
         }}
       >
         <small>{content[0]}</small>
@@ -141,6 +191,7 @@ function App() {
         >
           <option value={Views.TIME_GRID_DAY}>day</option>
           <option value={Views.TIME_GRID_WEEK}>week</option>
+          <option value={Views.TIME_GRID_TWO_WEEK}>2 weeks</option>
           <option value={Views.DAY_GRID_MONTH}>month</option>
         </select>
 
@@ -151,8 +202,13 @@ function App() {
         <div className="container-events" id="external-events">
           <h3 style={{ textAlign: "center" }}>Events</h3>
 
-          {list.map((item) => (
-            <div key={item.id} title={item.title} id={item.id} className="events-item">
+          {externalEvents.map((item) => (
+            <div
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              className="events-item"
+            >
               {item.title}
             </div>
           ))}
@@ -170,12 +226,13 @@ function App() {
             headerToolbar={false}
             editable={true}
             selectable={true}
-            selectMirror={true}
+            selectMirror={false}
             dayMaxEvents={true}
             weekends={true}
             initialView={selectView}
             views={selectView}
             events={eventsData}
+            eventMinHeight={70}
             eventContent={renderEventContent}
             eventResize={handleEventUpdate}
             eventChange={handleEventUpdate}
