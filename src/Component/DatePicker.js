@@ -161,7 +161,7 @@ const DatePickerCom = ({ viewType, onChange }) => {
         };
       }
     }
-  }, [viewType, JSON.stringify(startDate)]);
+  }, [viewType, startDate]);
 
   // Handle next week
   const handleNextWeek = () => {

@@ -3,9 +3,10 @@ import { data } from "./data";
 import { Views } from "./common/constant";
 import FullCalendar from "@fullcalendar/react";
 import DatePicker from "./Component/DatePicker";
+import ExternalEventItem from "./Component/ExternalEventItem";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin, { Draggable } from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
@@ -54,35 +55,6 @@ function App() {
 
     setEventsData(events);
   }, []);
-
-  // handle drag external event item
-  useEffect(() => {
-    let draggableEl = document.getElementById("external-events");
-    
-    const draggable = new Draggable(draggableEl, {
-      itemSelector: ".events-item",
-
-      eventData: function (eventEl) {
-        const id = eventEl.getAttribute("id");
-
-        const title = eventEl.getAttribute("title");
-
-        const event = {
-          id,
-          title,
-        };
-
-        eventsData.push(event);
-
-        setEventsData(eventsData);
-
-        eventEl.remove();
-
-        return event;
-      },
-    });
-    return () => draggable.destroy();
-  });
 
   // Handle change view
   const handleViewSelect = (e) => {
@@ -234,7 +206,6 @@ function App() {
 
   // Update Event
   const handleEventUpdate = (e) => {
-
     const events = [...eventsData];
 
     const idx = events.findIndex((event) => event.id === e.event.id);
@@ -246,7 +217,7 @@ function App() {
     const lastPartTitle = events[idx].title.split("<>")[1];
 
     const subLastPartTitle = lastPartTitle ? lastPartTitle.split("-") : "";
-          
+
     const firstTitle = [
       ...subFirstPartTitle.slice(0, 1),
       ",",
@@ -273,6 +244,7 @@ function App() {
 
     setEventsData(events);
   };
+
   // Hanlde event drag outside calendar
   const handleEventDragOutSide = (e) => {
     let trashEl = document.getElementById("external-events"); //as HTMLElement;
@@ -296,24 +268,43 @@ function App() {
   };
 
   // Display event
-  const renderEventContent = useCallback((eventInfo) => {
-    const content = eventInfo.event.title.split("<>");
-    return (
-      <div
-        style={{
-          width: "100%",
-          padding: "5px",
-          overflow: "hidden",
-          borderRadius: "4px",
-          backgroundColor: eventInfo.event.backgroundColor,
-        }}
-      >
-        <small>{content[0]}</small>
-        <br />
-        <small>{content[1]}</small>
-      </div>
-    );
-  }, [JSON.stringify(eventsData), JSON.stringify(externalEvents)]);
+  const renderEventContent = useCallback(
+    (eventInfo) => {
+      const content = eventInfo.event.title.split("<>");
+      return (
+        <div
+          style={{
+            width: "100%",
+            padding: "5px",
+            overflow: "hidden",
+            borderRadius: "4px",
+            backgroundColor: eventInfo.event.backgroundColor,
+          }}
+        >
+          <small>{content[0]}</small>
+          <br />
+          <small>{content[1]}</small>
+        </div>
+      );
+    },
+    [JSON.stringify(eventsData), JSON.stringify(externalEvents)]
+  );
+
+  // Display external events 
+  const renderExternalEventContent = useCallback(() => {
+   return externalEvents.map((item) => {
+      const title = item.title.split("<>");
+      return (
+        <ExternalEventItem
+          key={item.id}
+          item={item}
+          title={title}
+          eventsData={eventsData}
+          setEventsData={setEventsData}
+        />
+      );
+    })
+  }, [JSON.stringify(eventsData), JSON.stringify(externalEvents)])
 
   return (
     <Fragment>
@@ -340,21 +331,7 @@ function App() {
         <div className="container-events" id="external-events">
           <h3 style={{ textAlign: "center" }}>Events</h3>
 
-          {externalEvents.map((item) => {
-            const title = item.title.split("<>");
-            return (
-              <div
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                className="events-item"
-              >
-                <small>{title[0]}</small>
-                <br />
-                <small>{title[1]}</small>
-              </div>
-            );
-          })}
+          {renderExternalEventContent()}
         </div>
 
         <div className="container-calendar">
