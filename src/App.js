@@ -12,13 +12,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./App.css";
 
 function App() {
-  const [externalEvents, setExternalEvents] = useState([
-    { title: "Event 1", id: "1" },
-  ]);
+  const [externalEvents, setExternalEvents] = useState([]);
 
   const [eventsData, setEventsData] = useState([]);
 
   const [selectView, setSelectView] = useState(Views.TIME_GRID_WEEK);
+
+  const [viewType, setViewType] = useState(Views.TIME_GRID_WEEK);
 
   const calendarRef = useRef(null);
 
@@ -74,6 +74,8 @@ function App() {
 
         setEventsData(eventsData);
 
+        eventEl.remove();
+
         return event;
       },
     });
@@ -82,37 +84,145 @@ function App() {
 
   // Handle change view
   const handleViewSelect = (e) => {
-    const views = {
-      timeGridTwoWeek: {
+    const threeDaysView = {
+      timeGridWeek: {
+        type: Views.TIME_GRID_WEEK,
+        duration: { days: 3 },
+      },
+    };
+
+    const fourDaysView = {
+      timeGridWeek: {
+        type: Views.TIME_GRID_WEEK,
+        duration: { days: 4 },
+      },
+    };
+
+    const twoWeeksView = {
+      timeGridWeek: {
         type: Views.TIME_GRID_WEEK,
         duration: { days: 14 },
       },
     };
 
+    const threeWeeksView = {
+      timeGridWeek: {
+        type: Views.TIME_GRID_WEEK,
+        duration: { days: 21 },
+      },
+    };
+
+    const fourWeeksView = {
+      timeGridWeek: {
+        type: Views.TIME_GRID_TWO_WEEK,
+        duration: { days: 28 },
+      },
+    };
+
+    // Plugins view type
     if (
       e.target.value === Views.TIME_GRID_DAY ||
       e.target.value === Views.TIME_GRID_WEEK ||
       e.target.value === Views.DAY_GRID_MONTH
     ) {
       setSelectView(e.target.value);
+      setViewType(e.target.value);
       calendarRef.current.getApi().changeView(e.target.value);
+    }
+    // Custom view type
+    else {
+      switch (e.target.value) {
+        case Views.TIME_GRID_TWO_WEEK: {
+          setViewType({ ...twoWeeksView });
+          break;
+        }
+        case Views.TIME_GRID_THREE_WEEK: {
+          setViewType({ ...threeWeeksView });
+          break;
+        }
+        case Views.TIME_GRID_FOUR_WEEK: {
+          setViewType({ ...fourWeeksView });
+          break;
+        }
+        case Views.TIME_GRID_THREE_DAY: {
+          setViewType({ ...threeDaysView });
+          break;
+        }
+        case Views.TIME_GRID_FOUR_DAY: {
+          setViewType({ ...fourDaysView });
+          break;
+        }
+      }
+      setSelectView(e.target.value);
+      calendarRef.current.getApi().changeView(Views.TIME_GRID_WEEK);
     }
   };
 
   // Handle date pick
   const handleDatePick = (date) => {
     switch (selectView) {
+      // day
       case Views.TIME_GRID_DAY: {
         calendarRef.current.getApi().gotoDate(date);
         break;
       }
-      case Views.TIME_GRID_WEEK: {
-        if (typeof date === "object") {
+      // three days
+      case Views.TIME_GRID_THREE_DAY: {
+        if (Array.isArray(date)) {
           const [start] = date;
           calendarRef.current.getApi().gotoDate(start);
         }
         break;
       }
+      // four days
+      case Views.TIME_GRID_FOUR_DAY: {
+        if (Array.isArray(date)) {
+          const [start] = date;
+          calendarRef.current.getApi().gotoDate(start);
+        }
+        break;
+      }
+      // week
+      case Views.TIME_GRID_WEEK: {
+        if (Array.isArray(date)) {
+          const [start] = date;
+          calendarRef.current.getApi().gotoDate(start);
+        } else {
+          calendarRef.current.getApi().gotoDate(date);
+        }
+        break;
+      }
+      // two weeks
+      case Views.TIME_TWO_WEEK: {
+        if (Array.isArray(date)) {
+          const [start] = date;
+          calendarRef.current.getApi().gotoDate(start);
+        } else {
+          calendarRef.current.getApi().gotoDate(date);
+        }
+        break;
+      }
+      // three weeks
+      case Views.TIME_THREE_WEEK: {
+        if (Array.isArray(date)) {
+          const [start] = date;
+          calendarRef.current.getApi().gotoDate(start);
+        } else {
+          calendarRef.current.getApi().gotoDate(date);
+        }
+        break;
+      }
+      // four weeks
+      case Views.TIME_FOUR_WEEK: {
+        if (Array.isArray(date)) {
+          const [start] = date;
+          calendarRef.current.getApi().gotoDate(start);
+        } else {
+          calendarRef.current.getApi().gotoDate(date);
+        }
+        break;
+      }
+      // month
       case Views.DAY_GRID_MONTH: {
         calendarRef.current.getApi().gotoDate(date);
         break;
@@ -160,6 +270,27 @@ function App() {
 
     setEventsData(events);
   };
+  // Hanlde event drag outside calendar
+  const handleEventDragOutSide = (e) => {
+    let trashEl = document.getElementById("external-events"); //as HTMLElement;
+
+    let x1 = trashEl.offsetLeft;
+    let x2 = trashEl.offsetLeft + trashEl.offsetWidth;
+    let y1 = trashEl.offsetTop;
+    let y2 = trashEl.offsetTop + trashEl.offsetHeight;
+
+    if (
+      e.jsEvent.pageX >= x1 &&
+      e.jsEvent.pageX <= x2 &&
+      e.jsEvent.pageY >= y1 &&
+      e.jsEvent.pageY <= y2
+    ) {
+      const events = [...externalEvents];
+      events.push(e.event);
+      e.event.remove();
+      setExternalEvents(events);
+    }
+  };
 
   // Display event
   const renderEventContent = (eventInfo) => {
@@ -190,8 +321,12 @@ function App() {
           onChange={handleViewSelect}
         >
           <option value={Views.TIME_GRID_DAY}>day</option>
+          <option value={Views.TIME_GRID_THREE_DAY}>3 days rolling</option>
+          <option value={Views.TIME_GRID_FOUR_DAY}>4 days rolling</option>
           <option value={Views.TIME_GRID_WEEK}>week</option>
           <option value={Views.TIME_GRID_TWO_WEEK}>2 weeks</option>
+          <option value={Views.TIME_GRID_THREE_WEEK}>3 weeks</option>
+          <option value={Views.TIME_GRID_FOUR_WEEK}>4 weeks</option>
           <option value={Views.DAY_GRID_MONTH}>month</option>
         </select>
 
@@ -202,16 +337,21 @@ function App() {
         <div className="container-events" id="external-events">
           <h3 style={{ textAlign: "center" }}>Events</h3>
 
-          {externalEvents.map((item) => (
-            <div
-              key={item.id}
-              id={item.id}
-              title={item.title}
-              className="events-item"
-            >
-              {item.title}
-            </div>
-          ))}
+          {externalEvents.map((item) => {
+            const title = item.title.split("<>");
+            return (
+              <div
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                className="events-item"
+              >
+                <small>{title[0]}</small>
+                <br />
+                <small>{title[1]}</small>
+              </div>
+            );
+          })}
         </div>
 
         <div className="container-calendar">
@@ -229,11 +369,14 @@ function App() {
             selectMirror={false}
             dayMaxEvents={true}
             weekends={true}
-            initialView={selectView}
-            views={selectView}
+            initialView={viewType}
+            views={viewType}
             events={eventsData}
-            eventMinHeight={70}
+            eventMinHeight={20}
+            eventClassNames="calendar-event"
+            eventDragStop={handleEventDragOutSide}
             eventContent={renderEventContent}
+            eventReceive={handleEventUpdate}
             eventResize={handleEventUpdate}
             eventChange={handleEventUpdate}
           />
