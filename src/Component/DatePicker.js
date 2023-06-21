@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useCallback, useRef } from "react";
 import { Views } from "../common/constant";
 import { extendMoment } from "moment-range";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
@@ -9,6 +9,8 @@ const moment = extendMoment(Moment);
 
 const DatePickerCom = ({ viewType, onChange }) => {
   const [startDate, setStartDate] = useState(new Date());
+
+  let currentDate = new Date();
 
   useEffect(() => {
     setStartDate(new Date());
@@ -25,13 +27,13 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // three days props
       case Views.TIME_GRID_THREE_DAY: {
-        const prev = startDate.getDate() - 1;
+        const prev = currentDate.getDate() - 1;
 
-        const next = startDate.getDate() + 1;
+        const next = currentDate.getDate() + 1;
 
-        const prevDay = new Date(startDate.setDate(prev)).toUTCString();
+        const prevDay = new Date(currentDate.setDate(prev)).toUTCString();
 
-        const nextDay = new Date(startDate.setDate(next)).toUTCString();
+        const nextDay = new Date(currentDate.setDate(next)).toUTCString();
 
         return {
           startDate: new Date(prevDay),
@@ -42,13 +44,13 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // four days props
       case Views.TIME_GRID_FOUR_DAY: {
-        const prev = startDate.getDate() - 2;
+        const prev = currentDate.getDate() - 1;
 
-        const next = startDate.getDate() + 2;
+        const next = currentDate.getDate() + 2;
 
-        const prevDay = new Date(startDate.setDate(prev)).toUTCString();
+        const prevDay = new Date(currentDate.setDate(prev)).toUTCString();
 
-        const nextDay = new Date(startDate.setDate(next)).toUTCString();
+        const nextDay = new Date(currentDate.setDate(next)).toUTCString();
 
         return {
           startDate: new Date(prevDay),
@@ -59,13 +61,15 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // week props
       case Views.TIME_GRID_WEEK: {
-        const first = startDate.getDate() - startDate.getDay();
+        const first = currentDate.getDate() - currentDate.getDay();
 
         const last = first + 6;
 
-        const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+        const firstDayOfWeek = new Date(
+          currentDate.setDate(first)
+        ).toUTCString();
 
-        const lastDayOfWeek = new Date(startDate.setDate(last)).toUTCString();
+        const lastDayOfWeek = new Date(currentDate.setDate(last)).toUTCString();
 
         return {
           startDate: new Date(firstDayOfWeek),
@@ -77,13 +81,15 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // two weeks props
       case Views.TIME_GRID_TWO_WEEK: {
-        const first = startDate.getDate() - startDate.getDay();
+        const first = currentDate.getDate() - currentDate.getDay();
 
         const last = first + 13;
 
-        const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+        const firstDayOfWeek = new Date(
+          currentDate.setDate(first)
+        ).toUTCString();
 
-        const lastDayOfWeek = new Date(startDate.setDate(last)).toUTCString();
+        const lastDayOfWeek = new Date(currentDate.setDate(last)).toUTCString();
 
         return {
           startDate: new Date(firstDayOfWeek),
@@ -95,13 +101,15 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // three weeks props
       case Views.TIME_GRID_THREE_WEEK: {
-        const first = startDate.getDate() - startDate.getDay();
+        const first = currentDate.getDate() - currentDate.getDay();
 
         const last = first + 20;
 
-        const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+        const firstDayOfWeek = new Date(
+          currentDate.setDate(first)
+        ).toUTCString();
 
-        const lastDayOfWeek = new Date(startDate.setDate(last)).toUTCString();
+        const lastDayOfWeek = new Date(currentDate.setDate(last)).toUTCString();
 
         return {
           startDate: new Date(firstDayOfWeek),
@@ -113,13 +121,15 @@ const DatePickerCom = ({ viewType, onChange }) => {
       }
       // four weeks props
       case Views.TIME_GRID_FOUR_WEEK: {
-        const first = startDate.getDate() - startDate.getDay();
+        const first = currentDate.getDate() - currentDate.getDay();
 
         const last = first + 27;
 
-        const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+        const firstDayOfWeek = new Date(
+          currentDate.setDate(first)
+        ).toUTCString();
 
-        const lastDayOfWeek = new Date(startDate.setDate(last)).toUTCString();
+        const lastDayOfWeek = new Date(currentDate.setDate(last)).toUTCString();
 
         return {
           startDate: new Date(firstDayOfWeek),
@@ -135,9 +145,9 @@ const DatePickerCom = ({ viewType, onChange }) => {
 
         const excludeDates = [];
 
-        const year = startDate.getFullYear();
+        const year = currentDate.getFullYear();
 
-        const month = startDate.getMonth();
+        const month = currentDate.getMonth();
 
         const firstDayOfMonth = new Date(year, month, 1);
 
@@ -229,6 +239,7 @@ const DatePickerCom = ({ viewType, onChange }) => {
 
           setStartDate(start);
         }
+
         return onChange && onChange(d);
       }
       // two weeks

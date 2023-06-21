@@ -167,7 +167,7 @@ function App() {
         break;
       }
       // two weeks
-      case Views.TIME_TWO_WEEK: {
+      case Views.TIME_GRID_TWO_WEEK: {
         if (Array.isArray(date)) {
           const [start] = date;
           calendarRef.current.getApi().gotoDate(start);
@@ -177,7 +177,7 @@ function App() {
         break;
       }
       // three weeks
-      case Views.TIME_THREE_WEEK: {
+      case Views.TIME_GRID_THREE_WEEK: {
         if (Array.isArray(date)) {
           const [start] = date;
           calendarRef.current.getApi().gotoDate(start);
@@ -187,7 +187,7 @@ function App() {
         break;
       }
       // four weeks
-      case Views.TIME_FOUR_WEEK: {
+      case Views.TIME_GRID_FOUR_WEEK: {
         if (Array.isArray(date)) {
           const [start] = date;
           calendarRef.current.getApi().gotoDate(start);
@@ -290,9 +290,9 @@ function App() {
     [JSON.stringify(eventsData), JSON.stringify(externalEvents)]
   );
 
-  // Display external events 
+  // Display external events
   const renderExternalEventContent = useCallback(() => {
-   return externalEvents.map((item) => {
+    return externalEvents.map((item) => {
       const title = item.title.split("<>");
       return (
         <ExternalEventItem
@@ -303,8 +303,8 @@ function App() {
           setEventsData={setEventsData}
         />
       );
-    })
-  }, [JSON.stringify(eventsData), JSON.stringify(externalEvents)])
+    });
+  }, [JSON.stringify(eventsData), JSON.stringify(externalEvents)]);
 
   return (
     <Fragment>
