@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { Views } from "../common/constant";
 import { extendMoment } from "moment-range";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
@@ -15,7 +15,7 @@ const DatePickerCom = ({ viewType, onChange }) => {
   }, [viewType]);
 
   // Get date picker props base on view type
-  const getProps = () => {
+  const getProps = useCallback(() => {
     switch (viewType) {
       // day props
       case Views.TIME_GRID_DAY: {
@@ -44,7 +44,7 @@ const DatePickerCom = ({ viewType, onChange }) => {
       case Views.TIME_GRID_FOUR_DAY: {
         const prev = startDate.getDate() - 2;
 
-        const next = startDate.getDate() + 1;
+        const next = startDate.getDate() + 2;
 
         const prevDay = new Date(startDate.setDate(prev)).toUTCString();
 
@@ -161,7 +161,7 @@ const DatePickerCom = ({ viewType, onChange }) => {
         };
       }
     }
-  };
+  }, [viewType, JSON.stringify(startDate)]);
 
   // Handle next week
   const handleNextWeek = () => {
@@ -282,4 +282,4 @@ const DatePickerCom = ({ viewType, onChange }) => {
   );
 };
 
-export default DatePickerCom;
+export default memo(DatePickerCom);

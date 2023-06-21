@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, useEffect } from "react";
+import { Fragment, useRef, useState, useEffect, useCallback } from "react";
 import { data } from "./data";
 import { Views } from "./common/constant";
 import FullCalendar from "@fullcalendar/react";
@@ -58,8 +58,10 @@ function App() {
   // handle drag external event item
   useEffect(() => {
     let draggableEl = document.getElementById("external-events");
+    
     const draggable = new Draggable(draggableEl, {
       itemSelector: ".events-item",
+
       eventData: function (eventEl) {
         const id = eventEl.getAttribute("id");
 
@@ -232,6 +234,7 @@ function App() {
 
   // Update Event
   const handleEventUpdate = (e) => {
+
     const events = [...eventsData];
 
     const idx = events.findIndex((event) => event.id === e.event.id);
@@ -243,7 +246,7 @@ function App() {
     const lastPartTitle = events[idx].title.split("<>")[1];
 
     const subLastPartTitle = lastPartTitle ? lastPartTitle.split("-") : "";
-
+          
     const firstTitle = [
       ...subFirstPartTitle.slice(0, 1),
       ",",
@@ -293,7 +296,7 @@ function App() {
   };
 
   // Display event
-  const renderEventContent = (eventInfo) => {
+  const renderEventContent = useCallback((eventInfo) => {
     const content = eventInfo.event.title.split("<>");
     return (
       <div
@@ -310,7 +313,7 @@ function App() {
         <small>{content[1]}</small>
       </div>
     );
-  };
+  }, [JSON.stringify(eventsData), JSON.stringify(externalEvents)]);
 
   return (
     <Fragment>
