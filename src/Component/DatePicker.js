@@ -1,7 +1,7 @@
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
+import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import { Views } from "../common/constant";
 import { extendMoment } from "moment-range";
-import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import Moment from "moment";
 
@@ -10,10 +10,9 @@ const moment = extendMoment(Moment);
 const DatePickerCom = ({ viewType, onChange }) => {
   const [startDate, setStartDate] = useState(new Date());
 
-  const currentDate = new Date();
-
   useEffect(() => {
     setStartDate(new Date());
+    onChange && onChange(new Date());
   }, [viewType]);
 
   // Get date picker props base on view type
@@ -165,32 +164,77 @@ const DatePickerCom = ({ viewType, onChange }) => {
     }
   }, [viewType, startDate]);
 
-  // Handle next week
-  const handleNextWeek = () => {
-    const first = startDate.getDate() - startDate.getDay();
+  // Handle prev/next
+  const handleNavigator = (type) => {
+    let date = "";
 
-    const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+    const isPrev = type === "prev";
 
-    const date = new Date(
-      new Date(firstDayOfWeek).setDate(new Date(firstDayOfWeek).getDate() + 7)
-    );
+    switch (viewType) {
+      case Views.TIME_GRID_DAY: {
+        const d = startDate.getDate();
 
-    setStartDate(date);
+        date = new Date(
+          new Date(startDate.setDate(isPrev ? d - 1 : d + 1)).toUTCString()
+        );
 
-    onChange && onChange(date);
-  };
+        setStartDate(date);
 
-  // Handle prev week
-  const handlePrevWeek = () => {
-    const first = startDate.getDate() - startDate.getDay();
+        break;
+      }
+      case Views.TIME_GRID_THREE_DAY: {
+        const d = startDate.getDate();
 
-    const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+        date = new Date(
+          new Date(startDate.setDate(isPrev ? d - 3 : d + 3)).toUTCString()
+        );
 
-    const date = new Date(
-      new Date(firstDayOfWeek).setDate(new Date(firstDayOfWeek).getDate() - 7)
-    );
+        setStartDate(date);
 
-    setStartDate(date);
+        break;
+      }
+      case Views.TIME_GRID_FOUR_DAY: {
+        const d = startDate.getDate();
+
+        date = new Date(
+          new Date(startDate.setDate(isPrev ? d - 4 : d + 4)).toUTCString()
+        );
+
+        setStartDate(date);
+
+        break;
+      }
+      case Views.DAY_GRID_MONTH: {
+        const year = startDate.getFullYear();
+
+        const month = isPrev
+          ? startDate.getMonth() - 1
+          : startDate.getMonth() + 1;
+
+        date = new Date(year, month, 1);
+
+        setStartDate(date);
+
+        break;
+      }
+      default: {
+        const first = startDate.getDate() - startDate.getDay();
+
+        const firstDayOfWeek = new Date(startDate.setDate(first)).toUTCString();
+
+        date = new Date(
+          new Date(firstDayOfWeek).setDate(
+            isPrev
+              ? new Date(firstDayOfWeek).getDate() - 7
+              : new Date(firstDayOfWeek).getDate() + 7
+          )
+        );
+
+        setStartDate(date);
+
+        break;
+      }
+    }
 
     onChange && onChange(date);
   };
@@ -198,72 +242,13 @@ const DatePickerCom = ({ viewType, onChange }) => {
   // Handle change date base on view type
   const handleDatePick = (d) => {
     switch (viewType) {
-      // day
-      case Views.TIME_GRID_DAY: {
+      case Views.TIME_GRID_DAY || Views.DAY_GRID_MONTH: {
         setStartDate(d);
 
         return onChange && onChange(d);
       }
-      // three days
-      case Views.TIME_GRID_THREE_DAY: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-
-        return onChange && onChange(d);
-      }
-      // four days
-      case Views.TIME_GRID_FOUR_DAY: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-
-        return onChange && onChange(d);
-      }
-      // week
-      case Views.TIME_GRID_WEEK: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-
-        return onChange && onChange(d);
-      }
-      // two weeks
-      case Views.TIME_GRID_TWO_WEEK: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-        return onChange && onChange(d);
-      }
-      // three weeks
-      case Views.TIME_GRID_THREE_WEEK: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-        return onChange && onChange(d);
-      }
-      // four weeks
-      case Views.TIME_GRID_FOUR_WEEK: {
-        if (Array.isArray(d)) {
-          const [start] = d;
-
-          setStartDate(start);
-        }
-        return onChange && onChange(d);
-      }
-      // month
-      case Views.DAY_GRID_MONTH: {
-        setStartDate(d);
+      default: {
+        setStartDate(d?.[0] || d);
 
         return onChange && onChange(d);
       }
@@ -272,13 +257,19 @@ const DatePickerCom = ({ viewType, onChange }) => {
 
   return (
     <div className="fc-datepikcer">
-      <button className="datepicker-action" onClick={handlePrevWeek}>
+      <button
+        className="datepicker-action"
+        onClick={() => handleNavigator("prev")}
+      >
         <FaAngleLeft />
       </button>
 
       <DatePicker {...getProps()} monthsShown={2} onChange={handleDatePick} />
 
-      <button className="datepicker-action" onClick={handleNextWeek}>
+      <button
+        className="datepicker-action"
+        onClick={() => handleNavigator("next")}
+      >
         <FaAngleRight />
       </button>
     </div>

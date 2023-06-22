@@ -9,6 +9,8 @@ const ExternalEventItem = ({ item, title, eventsData, setEventsData }) => {
     const draggable = new Draggable(draggableEl, {
       itemSelector: ".events-item",
 
+      revert: true,
+
       eventData: function (eventEl) {
         const id = eventEl.getAttribute("id");
 
